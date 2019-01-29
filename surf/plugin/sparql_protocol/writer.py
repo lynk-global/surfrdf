@@ -66,7 +66,10 @@ def _prepare_add_many_query(resources, context=None):
     query = insert()
 
     if context:
+        query = insert()
         query.into(context)
+    else:
+        query = insert(data=True)
 
     for resource in resources:
         s = resource.subject
@@ -104,7 +107,7 @@ def _prepare_delete_many_query(resources, context, inverse=False):
         where_clause.append(("?s", "?p", "?o"))
         where_clause.append(filter)
 
-    query.where(where_clause)
+    query.where(*where_clause)
 
     return query
 
@@ -215,7 +218,7 @@ class WriterPlugin(RDFWriter):
 
     def _add_many(self, triples, context=None):
         debug("ADD several triples")
-        query = insert()
+        query = insert(data=True)
 
         if context:
             query.into(context)
@@ -243,6 +246,10 @@ class WriterPlugin(RDFWriter):
     def _remove_from_endpoint(self, s=None, p=None, o=None, context=None):
         debug('REM : %s, %s, %s, %s' % (s, p, o, context))
 
+       #context = URIRef("#heeey")
+       # print(NamedGroup(context))
+       # print(Group())
+
         query = delete()
         try:
             if s is None and p is None and o is None and context:
@@ -259,9 +266,13 @@ class WriterPlugin(RDFWriter):
                     where_group = Group()
 
                 where_group.append(("?s", "?p", "?o"))
-                filter = Filter("({0})".format(self.__build_filter(s, p, o)))
-                where_group.append(filter)
-                query.where(where_group)
+                filter_terms = self.__build_filter(s, p, o)
+
+                if len(filter_terms) > 0:
+                    filter = Filter("({0})".format())
+                    where_group.append(filter)
+
+                query.where(*where_group)
 
             query_str = str(query)
             debug(query_str)

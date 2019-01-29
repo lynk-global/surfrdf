@@ -294,6 +294,9 @@ class Query(object):
             >>> query = select("?s").where(("?s", a, FOAF["person"]))
 
         """
+        print("statements", statements)
+        for stmt in statements:
+            print("stmt", stmt)
         self._data.extend([stmt for stmt in statements if validate_statement(stmt)])
         return self
 
@@ -409,6 +412,7 @@ class Query(object):
 def validate_statement(statement):
     if isinstance(statement, tuple(Query.STATEMENT_TYPES + [Query])):
         if isinstance(statement, (list, tuple)):
+            print(statement)
             try:
                 s, p, o = statement
             except:
