@@ -61,6 +61,14 @@ def _group_by_context(resources):
         context_group.append(resource)
     return contexts
 
+def _escape_string(value):
+    # escape values
+    value = value.replace("\n"," ")
+    value = value.replace('\\"',':magicquote:').replace('"','\\"').replace(':magicquote:','\\"')
+    #value = value.replace("\\'",':magicquote:').replace("'","\\'").replace(':magicquote:',"\\'")
+    value = value.replace('\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\")
+
+    return value
 
 def _prepare_add_many_query(resources, context=None):
     query = insert()
@@ -75,6 +83,10 @@ def _prepare_add_many_query(resources, context=None):
         s = resource.subject
         for p, objs in list(resource.rdf_direct.items()):
             for o in objs:
+                
+                if isinstance(o, Literal) and not isinstance(o.value, (int,float)) and ("'" in o.value or '"' in o.value):
+                    o = Literal(_escape_string(o.value), datatype=o.datatype)
+
                 query.template((s, p, o))
 
     return query
