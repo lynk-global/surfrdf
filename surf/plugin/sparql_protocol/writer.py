@@ -84,7 +84,7 @@ def _prepare_add_many_query(resources, context=None):
         for p, objs in list(resource.rdf_direct.items()):
             for o in objs:
                 
-                if isinstance(o, Literal) and not isinstance(o.value, (int,float)) and ("'" in o.value or '"' in o.value):
+                if isinstance(o, Literal) and isinstance(o.value, str) and ("'" in o.value or '"' in o.value):
                     o = Literal(_escape_string(o.value), datatype=o.datatype)
 
                 query.template((s, p, o))
