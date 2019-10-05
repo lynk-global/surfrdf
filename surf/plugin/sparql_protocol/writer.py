@@ -66,14 +66,16 @@ def _escape_string(value):
     value = value.replace("\n"," ")
     value = value.replace('\\"',':magicquote:').replace('"','\\"').replace(':magicquote:','\\"')
     #value = value.replace("\\'",':magicquote:').replace("'","\\'").replace(':magicquote:',"\\'")
-    value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
-    #value = value.replace(':doublequotes:', '\\"')	
-    #print("final value ", value)
+    #value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
+    value = value.replace('\\\\',':doubleslash:')
+    if ":doubleslash:" in value:
+	value = value.replace("\\","\\\\")
+        value = value.replace(":doubleslash:","\\\\")
     return value
 
 def _prepare_add_many_query(resources, context=None):
     query = insert()
-    print("query ===========", query)
+
     if context:
         query = insert()
         query.into(context)
@@ -84,7 +86,7 @@ def _prepare_add_many_query(resources, context=None):
         s = resource.subject
         for p, objs in list(resource.rdf_direct.items()):
             for o in objs:
-                
+
                 if isinstance(o, Literal) and isinstance(o.value, str) and ("'" in o.value or '"' in o.value or '\\'):
                     o = Literal(_escape_string(o.value), datatype=o.datatype)
                 query.template((s, p, o))
