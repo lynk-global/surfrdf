@@ -63,12 +63,16 @@ def _group_by_context(resources):
 
 def _escape_string(value):
     # escape values
+    #scenario 1 value = 'TBWA\Chiat\Day'
+    #scenario 2 value = 'Qiniso \"Qs\" Nyathi'
     value = value.replace("\n"," ")
     value = value.replace('\\"',':magicquote:').replace('"','\\"').replace(':magicquote:','\\"')
-    #value = value.replace("\\'",':magicquote:').replace("'","\\'").replace(':magicquote:',"\\'")
+    value = value.replace('\\"',':doublequotes:')
     value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
-
+    if ":doublequotes:" in value:
+        value = value.replace(':doublequotes:','\\"')
     return value
+
 
 def _prepare_add_many_query(resources, context=None):
     query = insert()
@@ -83,10 +87,9 @@ def _prepare_add_many_query(resources, context=None):
         s = resource.subject
         for p, objs in list(resource.rdf_direct.items()):
             for o in objs:
-                
+
                 if isinstance(o, Literal) and isinstance(o.value, str) and ("'" in o.value or '"' in o.value or '\\'):
                     o = Literal(_escape_string(o.value), datatype=o.datatype)
-
                 query.template((s, p, o))
 
     return query
