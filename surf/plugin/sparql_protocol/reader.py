@@ -106,11 +106,14 @@ class ReaderPlugin(RDFQueryReader):
             self._sparql_wrapper.setQuery(q_string)
             return self._sparql_wrapper.query().convert()
         except EndPointNotFound as _:
-            raise_(SparqlReaderException, "Endpoint not found", sys.exc_info()[2])
+            print("Endpoint not found", sys.exc_info()[2])
+            #raise_(SparqlReaderException, "Endpoint not found", sys.exc_info()[2])
         except QueryBadFormed as _:
-            raise_(SparqlReaderException, "Bad query: %s" % q_string, sys.exc_info()[2])
+            print("Bad query: %s" % q_string, sys.exc_info()[2])
+            #raise_(SparqlReaderException, "Bad query: %s" % q_string, sys.exc_info()[2])
         except Exception as e:
-            raise_(SparqlReaderException, "Exception: %s" % e, sys.exc_info()[2])
+            print("Exception: %s" % e, sys.exc_info()[2])
+            #raise_(SparqlReaderException, "Exception: %s" % e, sys.exc_info()[2])
 
     def _execute(self, query):
         return self.execute_sparql(str(query))
