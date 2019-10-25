@@ -108,11 +108,11 @@ def _prepare_delete_many_query(resources, context, inverse=False):
         where_clause = Group()
 
     subjects = [resource.subject for resource in resources]
-    filter = " OR ".join([u"?s = <{0:s}>".format(subject) for subject in subjects])
+    filter = " || ".join([u"?s = <{0:s}>".format(subject) for subject in subjects])
     filter = Filter("(%s)" % filter)
 
     if inverse:
-        filter2 = " OR ".join([u"?o = <{0:s}>".format(subject) for subject in subjects])
+        filter2 = " || ".join([u"?o = <{0:s}>".format(subject) for subject in subjects])
         filter2 = Filter("(%s)" % filter2)
 
         where1 = Group([("?s", "?p", "?o"), filter])
