@@ -63,12 +63,16 @@ def _group_by_context(resources):
 
 def _escape_string(value):
     # escape values
+    #scenario 1 value = 'TBWA\Chiat\Day'
+    #scenario 2 value = 'Qiniso \"Qs\" Nyathi'
     value = value.replace("\n"," ")
     value = value.replace('\\"',':magicquote:').replace('"','\\"').replace(':magicquote:','\\"')
-    #value = value.replace("\\'",':magicquote:').replace("'","\\'").replace(':magicquote:',"\\'")
+    value = value.replace('\\"',':doublequotes:')
     value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
-
+    if ":doublequotes:" in value:
+        value = value.replace(':doublequotes:','\\"')
     return value
+
 
 def _prepare_add_many_query(resources, context=None):
     query = insert()
@@ -83,10 +87,9 @@ def _prepare_add_many_query(resources, context=None):
         s = resource.subject
         for p, objs in list(resource.rdf_direct.items()):
             for o in objs:
-                
+
                 if isinstance(o, Literal) and isinstance(o.value, str) and ("'" in o.value or '"' in o.value or '\\'):
                     o = Literal(_escape_string(o.value), datatype=o.datatype)
-
                 query.template((s, p, o))
 
     return query
@@ -105,11 +108,11 @@ def _prepare_delete_many_query(resources, context, inverse=False):
         where_clause = Group()
 
     subjects = [resource.subject for resource in resources]
-    filter = " OR ".join([u"?s = <{0:s}>".format(subject) for subject in subjects])
+    filter = " || ".join([u"?s = <{0:s}>".format(subject) for subject in subjects])
     filter = Filter("(%s)" % filter)
 
     if inverse:
-        filter2 = " OR ".join([u"?o = <{0:s}>".format(subject) for subject in subjects])
+        filter2 = " || ".join([u"?o = <{0:s}>".format(subject) for subject in subjects])
         filter2 = Filter("(%s)" % filter2)
 
         where1 = Group([("?s", "?p", "?o"), filter])
