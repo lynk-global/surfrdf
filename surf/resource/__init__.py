@@ -525,6 +525,8 @@ class Resource(with_metaclass(ResourceMeta, object)):
     def __getitem__(self, attr_name):
         """ Dictionary-style attribute access. """
 
+        print('>>> attr_name: ', attr_name)
+        print('>>> type(attr_name): ', type(attr_name))
         if isinstance(attr_name, URIRef):
             attr_name = rdf2attr(attr_name, True)
 
