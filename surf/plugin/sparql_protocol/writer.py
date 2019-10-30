@@ -37,6 +37,7 @@ from future.utils import raise_
 __author__ = 'Cosmin Basca, Adam Gzella'
 
 import sys
+import re
 
 from SPARQLWrapper import SPARQLWrapper, JSON
 from SPARQLWrapper.SPARQLExceptions import EndPointNotFound, QueryBadFormed, SPARQLWrapperException
@@ -71,6 +72,7 @@ def _escape_string(value):
     value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
     if ":doublequotes:" in value:
         value = value.replace(':doublequotes:','\\"')
+    value = re.sub('^\?', '\\?', value)
     return value
 
 
@@ -126,8 +128,6 @@ def _prepare_delete_many_query(resources, context, pred=None, obj=None, inverse=
         where_clause.append(filter)
 
     query.where(*where_clause)
-
-    print('>>> query: ', query)
 
     return query
 
