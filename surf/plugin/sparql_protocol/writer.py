@@ -37,6 +37,7 @@ from future.utils import raise_
 __author__ = 'Cosmin Basca, Adam Gzella'
 
 import sys
+import re
 
 from SPARQLWrapper import SPARQLWrapper, JSON
 from SPARQLWrapper.SPARQLExceptions import EndPointNotFound, QueryBadFormed, SPARQLWrapperException
@@ -71,6 +72,7 @@ def _escape_string(value):
     value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
     if ":doublequotes:" in value:
         value = value.replace(':doublequotes:','\\"')
+    value = re.sub('^\?', '\\?', value)
     return value
 
 
@@ -95,7 +97,7 @@ def _prepare_add_many_query(resources, context=None):
     return query
 
 
-def _prepare_delete_many_query(resources, context, inverse=False):
+def _prepare_delete_many_query(resources, context, p=None, o=None, inverse=False):
     query = delete()
     if context:
         query.from_(context)
@@ -119,7 +121,10 @@ def _prepare_delete_many_query(resources, context, inverse=False):
         where2 = Group([("?s", "?p", "?o"), filter2])
         where_clause.append(Union([where1, where2]))
     else:
-        where_clause.append(("?s", "?p", "?o"))
+        if p and o:
+            where_clause.append(("?s", p, o))
+        else:
+            where_clause.append(("?s", "?p", "?o"))
         where_clause.append(filter)
 
     query.where(*where_clause)
@@ -172,10 +177,10 @@ class WriterPlugin(RDFWriter):
     def endpoint(self):
         return self._endpoint
 
-    def _save(self, *resources):
+    def _save(self, *resources, p=None, o=None):
         for context, items in _group_by_context(resources).items():
             # Deletes all triples with matching subjects.
-            remove_query = _prepare_delete_many_query(items, context)
+            remove_query = _prepare_delete_many_query(items, context, p, o)
             insert_query = _prepare_add_many_query(items, context)
             self._execute(remove_query, insert_query)
 

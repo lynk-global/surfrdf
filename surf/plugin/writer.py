@@ -67,7 +67,7 @@ class RDFWriter(with_metaclass(ABCMeta, Plugin)):
         pass
 
     @abstractmethod
-    def _save(self, *resources):
+    def _save(self, *resources, p=None, o=None):
         pass
 
     @abstractmethod
@@ -102,7 +102,7 @@ class RDFWriter(with_metaclass(ABCMeta, Plugin)):
 
         self._clear(context=context)
 
-    def save(self, *resources):
+    def save(self, *resources, p=None, o=None):
         """
         Replace the ``*resources`` in store with their current state.
         """
@@ -110,7 +110,7 @@ class RDFWriter(with_metaclass(ABCMeta, Plugin)):
             if not hasattr(resource, "subject"):
                 raise InvalidResourceException("Arguments must be of type surf.resource.Resource")
 
-        self._save(*resources)
+        self._save(*resources, p=p, o=o)
 
     def update(self, *resources):
         """
