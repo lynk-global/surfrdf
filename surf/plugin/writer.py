@@ -107,6 +107,7 @@ class RDFWriter(with_metaclass(ABCMeta, Plugin)):
         Replace the ``*resources`` in store with their current state.
         """
         for resource in resources:
+            print('>>> resource: ', resource)
             if not hasattr(resource, "subject"):
                 raise InvalidResourceException("Arguments must be of type surf.resource.Resource")
 
