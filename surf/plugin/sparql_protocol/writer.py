@@ -121,7 +121,7 @@ def _prepare_delete_many_query(resources, context, p=None, o=None, inverse=False
         where2 = Group([("?s", "?p", "?o"), filter2])
         where_clause.append(Union([where1, where2]))
     else:
-        if pred and obj:
+        if p and o:
             where_clause.append(("?s", p, o))
         else:
             where_clause.append(("?s", "?p", "?o"))
