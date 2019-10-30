@@ -97,7 +97,7 @@ def _prepare_add_many_query(resources, context=None):
     return query
 
 
-def _prepare_delete_many_query(resources, context, pred=None, obj=None, inverse=False):
+def _prepare_delete_many_query(resources, context, p=None, o=None, inverse=False):
     query = delete()
     if context:
         query.from_(context)
@@ -122,7 +122,7 @@ def _prepare_delete_many_query(resources, context, pred=None, obj=None, inverse=
         where_clause.append(Union([where1, where2]))
     else:
         if pred and obj:
-            where_clause.append(("?s", pred, obj))
+            where_clause.append(("?s", p, o))
         else:
             where_clause.append(("?s", "?p", "?o"))
         where_clause.append(filter)
@@ -177,10 +177,10 @@ class WriterPlugin(RDFWriter):
     def endpoint(self):
         return self._endpoint
 
-    def _save(self, *resources, pred=None, obj=None):
+    def _save(self, *resources, p=None, o=None):
         for context, items in _group_by_context(resources).items():
             # Deletes all triples with matching subjects.
-            remove_query = _prepare_delete_many_query(items, context, pred, obj)
+            remove_query = _prepare_delete_many_query(items, context, p, o)
             insert_query = _prepare_add_many_query(items, context)
             self._execute(remove_query, insert_query)
 

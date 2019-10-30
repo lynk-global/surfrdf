@@ -173,10 +173,10 @@ class Store(object):
         self.writer.clear(context = context)
 
     # Crud
-    def save(self, *resources):
+    def save(self, *resources, p=None, o=None):
         """ See :func:`surf.plugin.writer.RDFWriter.save` method. """
 
-        self.writer.save(*resources)
+        self.writer.save(*resources, p, o)
 
         for resource in resources:
             resource.dirty = False
