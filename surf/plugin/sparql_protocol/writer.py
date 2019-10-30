@@ -127,6 +127,8 @@ def _prepare_delete_many_query(resources, context, pred=None, obj=None, inverse=
 
     query.where(*where_clause)
 
+    print('>>> query: ', query)
+
     return query
 
 
