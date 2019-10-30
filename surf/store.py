@@ -176,7 +176,7 @@ class Store(object):
     def save(self, *resources, p=None, o=None):
         """ See :func:`surf.plugin.writer.RDFWriter.save` method. """
 
-        self.writer.save(*resources, p, o)
+        self.writer.save(*resources, p=p, o=o)
 
         for resource in resources:
             resource.dirty = False
