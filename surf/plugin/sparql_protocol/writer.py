@@ -175,9 +175,9 @@ class WriterPlugin(RDFWriter):
     def _save(self, *resources):
         for context, items in _group_by_context(resources).items():
             # Deletes all triples with matching subjects.
-            remove_query = _prepare_delete_many_query(items, context)
+            #remove_query = _prepare_delete_many_query(items, context)
             insert_query = _prepare_add_many_query(items, context)
-            self._execute(remove_query, insert_query)
+            self._execute(insert_query)
 
     def _update(self, *resources):
         for context, items in _group_by_context(resources).items():
