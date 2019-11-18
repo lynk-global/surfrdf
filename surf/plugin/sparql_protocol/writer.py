@@ -224,15 +224,15 @@ class WriterPlugin(RDFWriter):
             return True
 
         except EndPointNotFound as _:
-            print("Endpoint not found", sys.exc_info()[2])
-            #raise_(SparqlWriterException, "Endpoint not found", sys.exc_info()[2])
+            #print("Endpoint not found", sys.exc_info()[2])
+            raise_(SparqlWriterException, "Endpoint not found", sys.exc_info()[2])
         except QueryBadFormed as _:
-            print("Bad query: %s" % query_str, sys.exc_info()[2])
-            #raise_(SparqlWriterException, "Bad query: %s" % query_str, sys.exc_info()[2])
+            #print("Bad query: %s" % query_str, sys.exc_info()[2])
+            raise_(SparqlWriterException, "Bad query: %s" % query_str, sys.exc_info()[2])
         except Exception as e:
             msg = "Exception: %s (query: %s)" % (e, query_str)
-            print(msg, sys.exc_info()[2])
-            #raise_(SparqlWriterException, msg, sys.exc_info()[2])
+            #print(msg, sys.exc_info()[2])
+            raise_(SparqlWriterException, msg, sys.exc_info()[2])
 
     def _add_many(self, triples, context=None):
         debug("ADD several triples")
