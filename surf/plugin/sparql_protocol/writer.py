@@ -61,7 +61,7 @@ def _group_by_context(resources):
         context_group.append(resource)
     return contexts
 
-def _escape_string(value):
+def escape_string(value):
     # escape values
     #scenario 1 value = 'TBWA\Chiat\Day'
     #scenario 2 value = 'Qiniso \"Qs\" Nyathi'
@@ -73,6 +73,25 @@ def _escape_string(value):
         value = value.replace(':doublequotes:','\\"')
     return value
 
+def string_val(term):
+    if isinstance(term, (URIRef, BNode)):
+        return '%s' % (term.n3())
+    elif isinstance(term, str):
+        if term.startswith('?'):
+            return '%s' % term
+        elif is_uri(term):
+            return '<%s>' % term
+        else:
+            return '"%s"' % term
+    elif type(term) is Literal:
+        return term.n3()
+    elif isinstance(term, (list, tuple)):
+        return '"%s"@%s' % (term[0], term[1])
+    elif type(term) is type and hasattr(term, 'uri'):
+        return '%s' % term.uri().n3()
+    elif hasattr(term, 'subject'):
+        return '%s' % term.subject.n3()
+    return term.__str__()
 
 def _prepare_add_many_query(resources, context=None):
     query = insert()
@@ -89,7 +108,7 @@ def _prepare_add_many_query(resources, context=None):
             for o in objs:
 
                 if isinstance(o, Literal) and isinstance(o.value, str) and ("'" in o.value or '"' in o.value or '\\'):
-                    o = Literal(_escape_string(o.value), datatype=o.datatype)
+                    o = Literal(escape_string(o.value), datatype=o.datatype)
                 query.template((s, p, o))
 
     return query
@@ -176,7 +195,6 @@ class WriterPlugin(RDFWriter):
     def _save(self, *resources):
         for context, items in _group_by_context(resources).items():
             # Deletes all triples with matching subjects.
-            #remove_query = _prepare_delete_many_query(items, context)
             insert_query = _prepare_add_many_query(items, context)
             self._execute(insert_query)
 
