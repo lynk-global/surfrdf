@@ -38,7 +38,7 @@ __author__ = 'Cosmin Basca, Adam Gzella'
 
 import sys
 
-from SPARQLWrapper import SPARQLWrapper, JSON
+from SPARQLWrapper import SPARQLWrapper, JSON, POSTDIRECTLY
 from SPARQLWrapper.SPARQLExceptions import EndPointNotFound, QueryBadFormed, SPARQLWrapperException
 
 from .reader import ReaderPlugin
@@ -163,6 +163,7 @@ class WriterPlugin(RDFWriter):
             self._sparql_wrapper.setCredentials(user, password)
 
         self._sparql_wrapper.setMethod("POST")
+        self._sparql_wrapper.setRequestMethod(POSTDIRECTLY)
 
         default_graph = kwargs.get('default_graph',None)
         if default_graph:
