@@ -71,6 +71,8 @@ def escape_string(value):
     value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
     if ":doublequotes:" in value:
         value = value.replace(':doublequotes:','\\"')
+    if "?" in value:
+        value = value.replace('?','\\\\?')        
     return value
 
 def string_val(term):
