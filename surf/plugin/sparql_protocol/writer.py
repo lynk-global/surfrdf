@@ -38,7 +38,7 @@ __author__ = 'Cosmin Basca, Adam Gzella'
 
 import sys
 
-from SPARQLWrapper import SPARQLWrapper, JSON
+from SPARQLWrapper import SPARQLWrapper, JSON, POSTDIRECTLY
 from SPARQLWrapper.SPARQLExceptions import EndPointNotFound, QueryBadFormed, SPARQLWrapperException
 
 from .reader import ReaderPlugin
@@ -61,7 +61,7 @@ def _group_by_context(resources):
         context_group.append(resource)
     return contexts
 
-def _escape_string(value):
+def escape_string(value):
     # escape values
     #scenario 1 value = 'TBWA\Chiat\Day'
     #scenario 2 value = 'Qiniso \"Qs\" Nyathi'
@@ -71,8 +71,29 @@ def _escape_string(value):
     value = value.replace('\\\\',':doubleslash:').replace("\\","\\\\").replace(":doubleslash:","\\\\")
     if ":doublequotes:" in value:
         value = value.replace(':doublequotes:','\\"')
+    if "?" in value:
+        value = value.replace('?','\\\\?')        
     return value
 
+def string_val(term):
+    if isinstance(term, (URIRef, BNode)):
+        return '%s' % (term.n3())
+    elif isinstance(term, str):
+        if term.startswith('?'):
+            return '%s' % term
+        elif is_uri(term):
+            return '<%s>' % term
+        else:
+            return '"%s"' % term
+    elif type(term) is Literal:
+        return term.n3()
+    elif isinstance(term, (list, tuple)):
+        return '"%s"@%s' % (term[0], term[1])
+    elif type(term) is type and hasattr(term, 'uri'):
+        return '%s' % term.uri().n3()
+    elif hasattr(term, 'subject'):
+        return '%s' % term.subject.n3()
+    return term.__str__()
 
 def _prepare_add_many_query(resources, context=None):
     query = insert()
@@ -89,7 +110,7 @@ def _prepare_add_many_query(resources, context=None):
             for o in objs:
 
                 if isinstance(o, Literal) and isinstance(o.value, str) and ("'" in o.value or '"' in o.value or '\\'):
-                    o = Literal(_escape_string(o.value), datatype=o.datatype)
+                    o = Literal(escape_string(o.value), datatype=o.datatype)
                 query.template((s, p, o))
 
     return query
@@ -163,6 +184,7 @@ class WriterPlugin(RDFWriter):
             self._sparql_wrapper.setCredentials(user, password)
 
         self._sparql_wrapper.setMethod("POST")
+        self._sparql_wrapper.setRequestMethod(POSTDIRECTLY)
 
         default_graph = kwargs.get('default_graph',None)
         if default_graph:
@@ -175,9 +197,8 @@ class WriterPlugin(RDFWriter):
     def _save(self, *resources):
         for context, items in _group_by_context(resources).items():
             # Deletes all triples with matching subjects.
-            remove_query = _prepare_delete_many_query(items, context)
             insert_query = _prepare_add_many_query(items, context)
-            self._execute(remove_query, insert_query)
+            self._execute(insert_query)
 
     def _update(self, *resources):
         for context, items in _group_by_context(resources).items():
@@ -224,11 +245,14 @@ class WriterPlugin(RDFWriter):
             return True
 
         except EndPointNotFound as _:
+            #print("Endpoint not found", sys.exc_info()[2])
             raise_(SparqlWriterException, "Endpoint not found", sys.exc_info()[2])
         except QueryBadFormed as _:
+            #print("Bad query: %s" % query_str, sys.exc_info()[2])
             raise_(SparqlWriterException, "Bad query: %s" % query_str, sys.exc_info()[2])
         except Exception as e:
             msg = "Exception: %s (query: %s)" % (e, query_str)
+            #print(msg, sys.exc_info()[2])
             raise_(SparqlWriterException, msg, sys.exc_info()[2])
 
     def _add_many(self, triples, context=None):
@@ -249,11 +273,14 @@ class WriterPlugin(RDFWriter):
             return True
 
         except EndPointNotFound as _:
-            raise_(SparqlWriterException, "Endpoint not found", sys.exc_info()[2])
+            print("Endpoint not found", sys.exc_info()[2])
+            #raise_(SparqlWriterException, "Endpoint not found", sys.exc_info()[2])
         except QueryBadFormed as _:
-            raise_(SparqlWriterException, "Bad query: %s" % query_str, sys.exc_info()[2])
+            print("Bad query: %s" % query_str, sys.exc_info()[2])
+            #raise_(SparqlWriterException, "Bad query: %s" % query_str, sys.exc_info()[2])
         except Exception as e:
-            raise_(SparqlWriterException, "Exception: %s" % e, sys.exc_info()[2])
+            print("Exception: %s" % e, sys.exc_info()[2])
+            #raise_(SparqlWriterException, "Exception: %s" % e, sys.exc_info()[2])
 
     def _add(self, s, p, o, context=None):
         return self._add_many([(s, p, o)], context)
